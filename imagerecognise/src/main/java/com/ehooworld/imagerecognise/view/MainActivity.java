@@ -278,6 +278,11 @@ public class MainActivity extends AppCompatActivity
                                         .override(224, 224)
                                         .placeholder(R.drawable.ic_sentiment_very_dissatisfied_black_24dp)
                                         .fitCenter();
+                                /**
+                                 * tensorFlow 对传入进行图像识别的Bitmap要求比较多
+                                 * Glide图像缩放选择fitcenter 识别出来的精度比centerCrop要高出很多。
+                                 * 水平不够 解释不清楚
+                                 */
                                 bitmap = Glide
                                         .with(MainActivity.this)
                                         .asBitmap()
