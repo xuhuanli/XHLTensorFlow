@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/XHLTensorFlow.iml" filepath="$PROJECT_DIR$/XHLTensorFlow.iml" />
+      <module fileurl="file://$PROJECT_DIR$/imagerecognise/imagerecognise.iml" filepath="$PROJECT_DIR$/imagerecognise/imagerecognise.iml" />
+    </modules>
+  </component>
+</project>

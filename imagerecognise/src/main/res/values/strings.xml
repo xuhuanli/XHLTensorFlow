@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">ImageRecognise</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="picture">picture</string>
+    <string name="nav_gallery">nav_gallery</string>
+    <string name="nav_share">nav_share</string>
+    <string name="nav_manage">nav_manage</string>
+    <string name="nav_slideshow">nav_slideshow</string>
+    <string name="nav_send">nav_send</string>
+    <string name="noImage">还没有新照片拍摄</string>
+    <string name="takePhoto">相机</string>
+</resources>
