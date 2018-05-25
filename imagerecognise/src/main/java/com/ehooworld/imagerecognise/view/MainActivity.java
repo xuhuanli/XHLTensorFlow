@@ -3,6 +3,7 @@ package com.ehooworld.imagerecognise.view;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -34,8 +36,13 @@ import com.ehooworld.imagerecognise.tensorflow.Classifier;
 import com.ehooworld.imagerecognise.tensorflow.IRecognise;
 import com.ehooworld.imagerecognise.tensorflow.RecPicture;
 
+import java.io.File;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+
+import top.zibin.luban.CompressionPredicate;
+import top.zibin.luban.Luban;
+import top.zibin.luban.OnCompressListener;
 
 import static com.ehooworld.imagerecognise.presenter.CameraImpl.CAMEAR_REQUEST_CODE;
 
@@ -127,8 +134,8 @@ public class MainActivity extends AppCompatActivity
         cameraImpl = new CameraImpl(this);
         mRecognise = new RecPicture(this);
     }
-    //暂时不做矩阵变换 Glide实现
-    /*private Bitmap scaleBitmap(Bitmap bm) {
+    //矩阵变换
+    private Bitmap scaleBitmap(Bitmap bm) {
 
         // 获得图片的宽高
         int width = bm.getWidth();
@@ -146,7 +153,7 @@ public class MainActivity extends AppCompatActivity
         // 得到新的图片
         return Bitmap.createBitmap(bm, 0, 0, width, height, matrix,
                 true);
-    }*/
+    }
 
     @Override
     public void onBackPressed() {
@@ -249,12 +256,11 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void run() {
 
-                StringBuilder stringBuilder = new StringBuilder();
-                stringBuilder.append(results.toString());
-                stringBuilder.append(" 识别所用时长 = ");
-                stringBuilder.append(lastProcessingTimeMs);
-                stringBuilder.append("ms");
-                tv_result.setText(stringBuilder.toString());
+                String stringBuilder = results.toString() +
+                        " 识别所用时长 = " +
+                        lastProcessingTimeMs +
+                        "ms";
+                tv_result.setText(stringBuilder);
             }
         });
     }
@@ -269,47 +275,38 @@ public class MainActivity extends AppCompatActivity
                     Bundle extras = data.getExtras();
                     Bitmap imageBitmap = (Bitmap) extras.get("data");*/
                     final Uri uri = cameraImpl.getUri();
+                    // TODO: 2018/5/25 LuBan 压缩图片质量
+                    Luban.with(MainActivity.this)
+                            .load(uri)
+                            .ignoreBy(100)
+                            .setTargetDir(MainActivity.this.getCacheDir().getPath())
+                            .filter(new CompressionPredicate() {
+                                @Override
+                                public boolean apply(String path) {
+                                    return !(TextUtils.isEmpty(path) || path.toLowerCase().endsWith(".gif"));
+                                }
+                            })
+                            .setCompressListener(new OnCompressListener() {
+                                @Override
+                                public void onStart() {
+//
+                                }
 
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                RequestOptions options = new RequestOptions()
-                                        .override(224, 224)
-                                        .placeholder(R.drawable.ic_sentiment_very_dissatisfied_black_24dp)
-                                        .fitCenter();
-                                /**
-                                 * tensorFlow 对传入进行图像识别的Bitmap要求比较多
-                                 * Glide图像缩放选择fitcenter 识别出来的精度比centerCrop要高出很多。
-                                 * 水平不够 解释不清楚
-                                 */
-                                bitmap = Glide
-                                        .with(MainActivity.this)
-                                        .asBitmap()
-                                        .load(uri)
-                                        .apply(options)
-                                        .submit(224, 224)
-                                        .get();
-                                // 获得图片的宽高
-                                testSize();
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        picView.setImageBitmap(bitmap);
+                                @Override
+                                public void onSuccess(File file) {
+                                    Glide
+                                            .with(getApplicationContext())
+                                            .load(file)
+                                            .into(picView);
+                                    bitmap = scaleBitmap(BitmapFactory.decodeFile(file.getPath()));
+                                }
 
-                                    }
-                                });
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            } catch (ExecutionException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }).start();
-
-                    /*bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
-                      setPicture(bitmap);*/
-
+                                @Override
+                                public void onError(Throwable e) {
+                                    Log.e("Error", e.getMessage());
+                                }
+                            })
+                            .launch();
                 }
                 break;
         }
@@ -321,8 +318,6 @@ public class MainActivity extends AppCompatActivity
     private void testSize() {
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
-        Log.d(TAG,"2原始bitmap尺寸:width= "+width+";height= "+height);
+        Log.d(TAG, "2原始bitmap尺寸:width= " + width + ";height= " + height);
     }
-
-
 }

@@ -16,14 +16,14 @@ public class RecPicture implements IRecognise {
 
     private IMainActivity view;
     private static final int INPUT_SIZE = 224;
-    private static final int IMAGE_MEAN = 117;
-    private static final float IMAGE_STD = 1;
+    private static final int IMAGE_MEAN = 128;
+    private static final float IMAGE_STD = 128.0f;
     private static final String INPUT_NAME = "input";
     private static final String OUTPUT_NAME = "final_result";
 
-    private static final String MODEL_FILE = "file:///android_asset/1221v3.pb";
+    private static final String MODEL_FILE = "file:///android_asset/optimized_trained_mobilenet.pb";
     private static final String LABEL_FILE =
-            "file:///android_asset/1221_labels.txt";
+            "file:///android_asset/trained_mobilenet_labels.txt";
     private final Context mContext;
     private Classifier mClassifier;
 
