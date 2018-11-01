@@ -3,14 +3,40 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 27
 
-
+    signingConfigs {
+        debug {
+            //storeFile file("C:/Users/Administrator/.android/debug.keystore")
+            try {
+                storeFile file("imagerecognise.jks")
+                storePassword "339005"
+                keyAlias "339005"
+                keyPassword "339005"
+            } catch (ex) {
+                throw new InvalidUserDataException(ex.toString())
+            }
+            v1SigningEnabled true
+            v2SigningEnabled true
+        }
+        release {
+            try {
+                storeFile file("imagerecognise.jks")
+                storePassword "339005"
+                keyAlias "339005"
+                keyPassword "339005"
+            } catch (ex) {
+                throw new InvalidUserDataException(ex.toString())
+            }
+            v1SigningEnabled true
+            v2SigningEnabled true
+        }
+    }
 
     defaultConfig {
         applicationId "com.ehooworld.imagerecognise"
         minSdkVersion 18
         targetSdkVersion 27
-        versionCode 1
-        versionName "1.0"
+        versionCode 3
+        versionName "0.3.0"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -19,7 +45,14 @@ android {
     buildTypes {
         release {
             minifyEnabled false
+            zipAlignEnabled true
+            shrinkResources false
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            minifyEnabled false
+            signingConfig signingConfigs.debug
         }
     }
 

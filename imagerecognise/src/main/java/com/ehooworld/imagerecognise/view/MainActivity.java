@@ -9,7 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.Parcelable;
+import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -27,7 +27,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.RequestOptions;
 import com.ehooworld.androidutils.ToastUtil;
 import com.ehooworld.imagerecognise.R;
 import com.ehooworld.imagerecognise.presenter.CameraImpl;
@@ -37,8 +36,8 @@ import com.ehooworld.imagerecognise.tensorflow.IRecognise;
 import com.ehooworld.imagerecognise.tensorflow.RecPicture;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import top.zibin.luban.CompressionPredicate;
 import top.zibin.luban.Luban;
@@ -134,13 +133,14 @@ public class MainActivity extends AppCompatActivity
         cameraImpl = new CameraImpl(this);
         mRecognise = new RecPicture(this);
     }
+
     //矩阵变换
     private Bitmap scaleBitmap(Bitmap bm) {
 
         // 获得图片的宽高
         int width = bm.getWidth();
         int height = bm.getHeight();
-        Log.d(TAG,"原始bitmap尺寸:width= "+width+";height= "+height);
+        Log.d(TAG, "原始bitmap尺寸:width= " + width + ";height= " + height);
         // 设置想要的大小
         int newWidth = 224;
         int newHeight = 224;
@@ -275,38 +275,17 @@ public class MainActivity extends AppCompatActivity
                     Bundle extras = data.getExtras();
                     Bitmap imageBitmap = (Bitmap) extras.get("data");*/
                     final Uri uri = cameraImpl.getUri();
+                    try {
+                        bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                        Glide
+                                .with(getApplicationContext())
+                                .load(bitmap)
+                                .into(picView);
+                        bitmap = scaleBitmap(bitmap);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     // TODO: 2018/5/25 LuBan 压缩图片质量
-                    Luban.with(MainActivity.this)
-                            .load(uri)
-                            .ignoreBy(100)
-                            .setTargetDir(MainActivity.this.getCacheDir().getPath())
-                            .filter(new CompressionPredicate() {
-                                @Override
-                                public boolean apply(String path) {
-                                    return !(TextUtils.isEmpty(path) || path.toLowerCase().endsWith(".gif"));
-                                }
-                            })
-                            .setCompressListener(new OnCompressListener() {
-                                @Override
-                                public void onStart() {
-//
-                                }
-
-                                @Override
-                                public void onSuccess(File file) {
-                                    Glide
-                                            .with(getApplicationContext())
-                                            .load(file)
-                                            .into(picView);
-                                    bitmap = scaleBitmap(BitmapFactory.decodeFile(file.getPath()));
-                                }
-
-                                @Override
-                                public void onError(Throwable e) {
-                                    Log.e("Error", e.getMessage());
-                                }
-                            })
-                            .launch();
                 }
                 break;
         }
